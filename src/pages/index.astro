@@ -56,29 +56,6 @@ import EmployerMarquee from '../components/EmployerMarquee.astro';
     width: min(100%, clamp(320px, 48vw, 655px));
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-logo {
-      animation: wobble 7s ease-in-out infinite;
-      transform-origin: 50% 60%;
-    }
-  }
-
-  @keyframes wobble {
-    0%,
-    100% {
-      transform: translate(0, 0);
-    }
-    25% {
-      transform: translate(8px, -10px);
-    }
-    50% {
-      transform: translate(0, -14px);
-    }
-    75% {
-      transform: translate(-8px, -10px);
-    }
-  }
-
   .hero-heading {
     text-transform: uppercase;
   }
