@@ -1,0 +1,168 @@
+---
+import '../styles/global.css';
+import { getImage } from 'astro:assets';
+import logoSquare from '../assets/logo.svg';
+import longformSource from '../assets/longformlogo.png';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const pageTitle = title === 'QuantSoc' ? title : `${title} · QuantSoc`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = new URL('/og.png', Astro.site);
+
+// longformlogo.svg still has un-outlined <text> (fails the brand guide's
+// text-outline guard), so the raster is what's on the page until it's
+// re-exported with text converted to curves.
+const longform = await getImage({ src: longformSource, format: 'webp', width: 700 });
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/what-we-offer', label: 'What We Offer' },
+  { href: '/achievements', label: 'Achievements' },
+  { href: '/get-involved', label: 'Get Involved' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <link rel="icon" type="image/svg+xml" href={logoSquare.src} />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <a class="visually-hidden" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="logo-link" aria-label="QuantSoc home">
+          <picture>
+            <source media="(min-width: 48rem)" type="image/webp" srcset={longform.src} />
+            <img src={logoSquare.src} width="1180" height="1180" alt="Swansea Quant Society" />
+          </picture>
+        </a>
+        <nav aria-label="Primary">
+          <ul class="nav-list">
+            {navLinks.map((link) => (
+              <li><a href={link.href}>{link.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="site-main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <img
+          src={longform.src}
+          width={longform.attributes.width}
+          height={longform.attributes.height}
+          alt="Swansea Quant Society"
+          class="footer-logo"
+          loading="lazy"
+        />
+        <nav aria-label="Social">
+          <a href="https://www.linkedin.com/company/108952073/">LinkedIn</a>
+          <a href="https://www.swansea-union.co.uk/activities/society/42383/">Swansea Students' Union</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .header-inner,
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1rem;
+  }
+
+  .logo-link {
+    display: inline-flex;
+    align-items: center;
+    height: 2rem;
+  }
+
+  /* Unwrap <picture> from the box tree so height:100% below resolves
+     against .logo-link (its explicit height), not <picture>'s auto height. */
+  .logo-link picture {
+    display: contents;
+  }
+
+  .logo-link img {
+    height: 100%;
+    width: auto;
+  }
+
+  @media (min-width: 48rem) {
+    .logo-link {
+      height: 2.25rem;
+    }
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    list-style: none;
+  }
+
+  .nav-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .site-main {
+    flex: 1 0 auto;
+  }
+
+  .site-footer {
+    flex-shrink: 0;
+    margin-top: 4rem;
+    border-top: 1px solid var(--white-dim);
+    background: color-mix(in srgb, var(--navy), white 6%);
+  }
+
+  .footer-logo {
+    width: clamp(200px, 60vw, 260px);
+    height: auto;
+  }
+
+  .footer-inner nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .footer-inner nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+</style>

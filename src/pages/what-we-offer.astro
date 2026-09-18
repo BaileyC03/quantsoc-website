@@ -1,0 +1,71 @@
+---
+import Base from '../layouts/Base.astro';
+
+const offerings = [
+  {
+    title: 'Early Planning',
+    body: 'Start building the right experience and knowledge early, well before recruiters start looking.',
+  },
+  {
+    title: 'Workshops',
+    body: "Hands on sessions covering employability, programming, and the maths behind quant finance, often with guest speakers in to share how they broke into the industry.",
+  },
+  {
+    title: 'CV Reviews',
+    body: "Get your CV reviewed by committee members who've secured real quant and finance internships.",
+  },
+  {
+    title: 'Socials',
+    body: 'Regular socials to meet the committee and other members outside of workshops.',
+  },
+  {
+    title: 'Competitions',
+    body: 'Get involved in quant competitions, with dedicated prep sessions for the WorldQuant BRAIN International Quant Championship.',
+  },
+];
+---
+
+<Base
+  title="What We Offer"
+  description="QuantSoc offers early planning, workshops on employability, tech and maths, CV reviews, socials, and competitions to help Swansea students break into quant careers."
+>
+  <section class="container page-intro">
+    <h1>What We Offer</h1>
+    <p>Everything we do is built around one goal: getting Swansea students into quant careers.</p>
+  </section>
+
+  <section class="container">
+    <ul class="grid-auto offer-list">
+      {offerings.map((item) => (
+        <li>
+          <h2>{item.title}</h2>
+          <p>{item.body}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .page-intro {
+    padding-block: clamp(2rem, 6vw, 3rem) 1rem;
+  }
+
+  .offer-list {
+    list-style: none;
+    padding-bottom: clamp(2rem, 6vw, 4rem);
+  }
+
+  .offer-list li {
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--lime);
+  }
+
+  .offer-list h2 {
+    font-size: 1.25rem;
+  }
+
+  .offer-list p {
+    margin-top: 0.5rem;
+  }
+</style>

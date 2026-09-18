@@ -1,0 +1,67 @@
+---
+import Base from '../layouts/Base.astro';
+import EmployerMarquee from '../components/EmployerMarquee.astro';
+---
+
+<Base
+  title="Achievements"
+  description="QuantSoc is currently #1 in Wales for the WorldQuant BRAIN International Quant Championship, with committee internship experience at Maven, Citi, JPMorgan, Bank of America, Amazon, Goldman Sachs and Moody's."
+>
+  <section class="container page-intro">
+    <h1>Achievements</h1>
+  </section>
+
+  <section class="container stat-section">
+    <p class="stat-number"><span class="stat-medal" aria-hidden="true">🥇</span>Currently #1 in Wales</p>
+    <p class="stat-body">
+      QuantSoc currently holds the #1 spot in Wales for the WorldQuant BRAIN International Quant
+      Championship (IQC), an international quant research competition open to students
+      worldwide.
+    </p>
+  </section>
+
+  <section class="container employers-section">
+    <h2>Learn from students who've landed work experience at</h2>
+    <EmployerMarquee />
+  </section>
+</Base>
+
+<style>
+  .page-intro {
+    padding-block: clamp(2rem, 6vw, 3rem) 0;
+  }
+
+  .stat-section {
+    padding-block: clamp(2rem, 6vw, 3rem);
+  }
+
+  .stat-number {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-sans);
+    font-weight: bold;
+    letter-spacing: -0.037em;
+    line-height: 1.05;
+    font-size: clamp(2rem, 1rem + 4vw, 3.5rem);
+    color: var(--lime);
+  }
+
+  .stat-medal {
+    font-size: 0.85em;
+  }
+
+  .stat-body {
+    margin-top: 1rem;
+    max-width: 42rem;
+  }
+
+  .employers-section {
+    padding-block: clamp(1rem, 4vw, 2rem) clamp(2rem, 6vw, 4rem);
+    border-top: 1px solid var(--white-dim);
+  }
+
+  .employers-section h2 {
+    margin-bottom: 1.5rem;
+  }
+</style>

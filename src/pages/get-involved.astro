@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Get Involved"
+  description="QuantSoc is free to join. Follow us on LinkedIn or join through the Swansea SU."
+>
+  <section class="container page-intro">
+    <h1>Get Involved</h1>
+    <p>QuantSoc is free to join.</p>
+    <div class="links">
+      <a class="btn" href="https://www.swansea-union.co.uk/activities/society/42383/">Join via Swansea SU</a>
+      <a class="btn" href="https://www.linkedin.com/company/108952073/">Follow us on LinkedIn</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-intro {
+    padding-block: clamp(2rem, 6vw, 4rem);
+  }
+
+  .page-intro p {
+    margin-top: 1rem;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+</style>

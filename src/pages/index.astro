@@ -1,0 +1,103 @@
+---
+import Base from '../layouts/Base.astro';
+import logoSquare from '../assets/logo.svg';
+import EmployerMarquee from '../components/EmployerMarquee.astro';
+---
+
+<Base
+  title="QuantSoc"
+  description="QuantSoc helps Swansea University students break into high-paying quant careers through early planning, CV reviews, workshops and competitions. Free to join."
+>
+  <section class="container hero">
+    <img
+      src={logoSquare.src}
+      width="1180"
+      height="1180"
+      alt=""
+      class="hero-logo"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="hero-copy">
+      <h1>You don't need a target university for a quant career.</h1>
+      <p>
+        QuantSoc helps Swansea University students break into high-paying quant roles through
+        early planning, CV reviews, workshops, and competition involvement.
+      </p>
+      <p><strong>Membership is free.</strong></p>
+      <a class="btn" href="https://www.swansea-union.co.uk/activities/society/42383/">Join QuantSoc</a>
+    </div>
+  </section>
+
+  <section class="container employers-section">
+    <h2>Learn from students who've landed work experience at</h2>
+    <EmployerMarquee />
+    <a class="about-link" href="/about">Learn more about QuantSoc →</a>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    align-items: center;
+    gap: var(--gap);
+    grid-template-columns: 1fr;
+    padding-block: clamp(2rem, 6vw, 4rem);
+  }
+
+  @media (min-width: 48rem) {
+    .hero {
+      grid-template-columns: minmax(280px, 1.3fr) 1fr;
+    }
+  }
+
+  .hero-logo {
+    justify-self: start;
+    width: min(100%, clamp(320px, 48vw, 655px));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-logo {
+      animation: wobble 7s ease-in-out infinite;
+      transform-origin: 50% 60%;
+    }
+  }
+
+  @keyframes wobble {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(8px, -10px);
+    }
+    50% {
+      transform: translate(0, -14px);
+    }
+    75% {
+      transform: translate(-8px, -10px);
+    }
+  }
+
+  .hero-copy p {
+    margin-top: 1rem;
+  }
+
+  .hero-copy .btn {
+    margin-top: 1.5rem;
+  }
+
+  .employers-section {
+    padding-block: clamp(2rem, 6vw, 3rem);
+    border-top: 1px solid var(--white-dim);
+  }
+
+  .employers-section h2 {
+    margin-bottom: 1.5rem;
+  }
+
+  .about-link {
+    display: inline-block;
+    margin-top: 2rem;
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="About"
+  description="QuantSoc was founded in 2025 at Swansea University to help students break into quantitative finance from a non-target university."
+>
+  <section class="container page-intro">
+    <h1>About QuantSoc</h1>
+    <p>
+      QuantSoc was founded in 2025 at Swansea University, a university quant recruiters don't
+      traditionally target.
+    </p>
+    <p>
+      We exist to close that gap, through early planning, CV reviews, workshops, and competition
+      involvement.
+    </p>
+    <p>
+      Even if quant finance doesn't end up being the goal, you'll come out with a strong
+      foundation for a career in fintech or wider finance.
+    </p>
+    <a href="/what-we-offer">See what we offer →</a>
+  </section>
+</Base>
+
+<style>
+  .page-intro {
+    padding-block: clamp(2rem, 6vw, 4rem);
+  }
+
+  .page-intro p {
+    max-width: 42rem;
+  }
+
+  .page-intro p {
+    margin-top: 1rem;
+  }
+
+  .page-intro a {
+    display: inline-block;
+    margin-top: 1.5rem;
+  }
+</style>

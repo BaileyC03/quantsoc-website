@@ -1,0 +1,113 @@
+---
+// Used on Home and Achievements. Official logos, all rendered as solid
+// white silhouettes (filter: brightness(0) invert(1)) so mismatched source
+// colours/formats read as one consistent logo wall.
+import { getImage } from 'astro:assets';
+import citi from '../assets/logos/citi.svg';
+import jpmorgan from '../assets/logos/jpmorgan.svg';
+import bankOfAmerica from '../assets/logos/bank-of-america.svg';
+import amazon from '../assets/logos/amazon.svg';
+import goldmanSachs from '../assets/logos/goldman-sachs.svg';
+import moodys from '../assets/logos/moodys.svg';
+import mavenSecuritiesSource from '../assets/logos/maven-securities.png';
+import veeqoSource from '../assets/logos/veeqo.png';
+
+const mavenSecurities = await getImage({ src: mavenSecuritiesSource, format: 'webp' });
+const veeqo = await getImage({ src: veeqoSource, format: 'webp' });
+
+const employers = [
+  { name: 'Maven Securities', logo: mavenSecurities },
+  { name: 'Citi', logo: citi },
+  { name: 'JPMorgan', logo: jpmorgan },
+  { name: 'Bank of America', logo: bankOfAmerica },
+  { name: 'Amazon', logo: amazon },
+  { name: 'Goldman Sachs', logo: goldmanSachs },
+  { name: "Moody's", logo: moodys },
+  { name: 'Veeqo', logo: veeqo },
+];
+---
+
+<div class="employer-marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="marquee-group">
+      {employers.map((e) => (
+        <span class="marquee-item">
+          <img src={e.logo.src} width={e.logo.width ?? e.logo.attributes?.width} height={e.logo.height ?? e.logo.attributes?.height} alt="" />
+        </span>
+      ))}
+    </span>
+    <span class="marquee-group">
+      {employers.map((e) => (
+        <span class="marquee-item">
+          <img src={e.logo.src} width={e.logo.width ?? e.logo.attributes?.width} height={e.logo.height ?? e.logo.attributes?.height} alt="" />
+        </span>
+      ))}
+    </span>
+  </div>
+</div>
+<ul class="visually-hidden">
+  {employers.map((e) => <li>{e.name}</li>)}
+</ul>
+
+<style>
+  .employer-marquee {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 2rem, black calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(90deg, transparent, black 2rem, black calc(100% - 2rem), transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: marquee 26s linear infinite;
+  }
+
+  .employer-marquee:hover .marquee-track,
+  .employer-marquee:focus-within .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .marquee-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-inline-end: clamp(2rem, 5vw, 4rem);
+  }
+
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    height: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+  }
+
+  .marquee-item img {
+    height: 100%;
+    width: auto;
+    max-width: none;
+    filter: brightness(0) invert(1);
+    opacity: 0.55;
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+
+    .marquee-group:last-child {
+      display: none;
+    }
+  }
+</style>
