@@ -19,7 +19,7 @@ import EmployerMarquee from '../components/EmployerMarquee.astro';
       fetchpriority="high"
     />
     <div class="hero-copy">
-      <h1>You don't need a target university for a quant career.</h1>
+      <h1 class="hero-heading">You <span class="accent">don't need</span> a target university for a quant career.</h1>
       <p>
         QuantSoc helps Swansea University students break into high-paying quant roles through
         early planning, CV reviews, workshops, and competition involvement.
@@ -77,6 +77,14 @@ import EmployerMarquee from '../components/EmployerMarquee.astro';
     75% {
       transform: translate(-8px, -10px);
     }
+  }
+
+  .hero-heading {
+    text-transform: uppercase;
+  }
+
+  .hero-heading .accent {
+    color: var(--lime);
   }
 
   .hero-copy p {
