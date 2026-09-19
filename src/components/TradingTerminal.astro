@@ -1,0 +1,662 @@
+---
+// src/components/TradingTerminal.astro
+---
+
+<div id="quant-terminal-wrapper" class="terminal-wrapper" data-initialized="false">
+  <!-- Terminal Header / Status Bar -->
+  <header class="terminal-header">
+    <div class="terminal-identity">
+      <span class="status-indicator live"></span>
+      <span class="ticker-symbol">QS-SYN / USD</span>
+      <span id="terminal-current-price" class="current-price">$100.00</span>
+      <span id="terminal-price-change" class="price-change accent-lime">+0.00%</span>
+    </div>
+
+    <!-- Strategy Presets -->
+    <div class="strategy-presets" role="group" aria-label="Quant Strategy Presets">
+      <button
+        type="button"
+        class="strategy-preset-btn active"
+        data-strategy="trend_following"
+        aria-pressed="true"
+      >
+        Trend Following (SMA)
+      </button>
+      <button
+        type="button"
+        class="strategy-preset-btn"
+        data-strategy="mean_reversion"
+        aria-pressed="false"
+      >
+        Mean Reversion (BB)
+      </button>
+      <button
+        type="button"
+        class="strategy-preset-btn"
+        data-strategy="momentum"
+        aria-pressed="false"
+      >
+        Momentum (RSI)
+      </button>
+    </div>
+
+    <!-- Simulation Controls -->
+    <div class="sim-controls">
+      <button type="button" id="btn-play-pause" class="ctrl-btn" aria-label="Pause simulation">
+        ⏸ Pause
+      </button>
+      <button type="button" id="btn-speed" class="ctrl-btn" aria-label="Change speed multiplier">
+        1x
+      </button>
+    </div>
+  </header>
+
+  <!-- Tuning Sliders Bar -->
+  <div class="terminal-toolbar">
+    <div class="slider-group">
+      <label for="slider-lookback">
+        Lookback Window: <span id="val-lookback" class="val-tag">20</span>
+      </label>
+      <input
+        type="range"
+        id="slider-lookback"
+        min="5"
+        max="50"
+        value="20"
+        step="1"
+        class="terminal-slider"
+      />
+    </div>
+
+    <div class="slider-group">
+      <label for="slider-volatility">
+        Volatility: <span id="val-volatility" class="val-tag">25%</span>
+      </label>
+      <input
+        type="range"
+        id="slider-volatility"
+        min="10"
+        max="60"
+        value="25"
+        step="5"
+        class="terminal-slider"
+      />
+    </div>
+
+    <div class="active-signal-container">
+      <span class="signal-label">Live Signal:</span>
+      <span id="terminal-signal-badge" class="signal-badge badge-hold">HOLD // Initialising</span>
+    </div>
+  </div>
+
+  <!-- Mobile Tab Switcher (Visible below 64rem) -->
+  <nav class="mobile-tabs" aria-label="Terminal Panels">
+    <button type="button" class="terminal-tab-btn active" data-tab="panel-chart">
+      Chart & Signals
+    </button>
+    <button type="button" class="terminal-tab-btn" data-tab="panel-orderbook">
+      Order Book
+    </button>
+    <button type="button" class="terminal-tab-btn" data-tab="panel-backtest">
+      Backtest & PnL
+    </button>
+  </nav>
+
+  <!-- Terminal Panels Grid -->
+  <div class="terminal-grid">
+    <!-- Panel 1: Price Chart -->
+    <section id="panel-chart" class="terminal-panel active-panel chart-panel" aria-label="Price Chart">
+      <div class="panel-header">
+        <h3 class="panel-title">Price Action & Indicators</h3>
+        <span class="panel-meta">1m Candle Interval</span>
+      </div>
+      <div id="terminal-chart-container" class="chart-container"></div>
+    </section>
+
+    <!-- Panel 2: Order Book (L2 Depth) -->
+    <section id="panel-orderbook" class="terminal-panel orderbook-panel" aria-label="Order Book">
+      <div class="panel-header">
+        <h3 class="panel-title">L2 Market Depth</h3>
+        <span id="orderbook-spread" class="orderbook-spread">SPREAD: $0.05</span>
+      </div>
+
+      <div class="orderbook-table-header">
+        <span>Price ($)</span>
+        <span>Size</span>
+        <span>Total</span>
+      </div>
+
+      <div id="orderbook-asks" class="orderbook-list asks-list" aria-label="Asks"></div>
+      <div class="orderbook-mid-line">
+        <span class="mid-tag">MID-MARKET</span>
+      </div>
+      <div id="orderbook-bids" class="orderbook-list bids-list" aria-label="Bids"></div>
+    </section>
+
+    <!-- Panel 3: Strategy Backtest & Metrics -->
+    <section id="panel-backtest" class="terminal-panel backtest-panel" aria-label="Strategy Performance">
+      <div class="panel-header">
+        <h3 class="panel-title">Strategy Performance</h3>
+        <span class="panel-meta">Initial: $10,000</span>
+      </div>
+
+      <!-- Metrics Cards -->
+      <div class="metrics-summary-grid">
+        <div class="metric-card full-width">
+          <span class="metric-label">Total PnL</span>
+          <span id="metric-pnl" class="metric-value accent-lime">+$0.00 (+0.0%)</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Sharpe Ratio</span>
+          <span id="metric-sharpe" class="metric-value">0.00</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Max Drawdown</span>
+          <span id="metric-drawdown" class="metric-value">0.0%</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Win Rate</span>
+          <span id="metric-winrate" class="metric-value">0.0%</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Closed Trades</span>
+          <span id="metric-trades" class="metric-value">0</span>
+        </div>
+      </div>
+
+      <!-- Execution Tape -->
+      <div class="trades-tape-container">
+        <h4 class="tape-title">Execution Tape</h4>
+        <div id="terminal-trades-tape" class="trades-tape" aria-live="polite"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  import { initTerminal } from '../lib/quant/terminal-controller';
+
+  const container = document.getElementById('quant-terminal-wrapper');
+  if (container) {
+    // Lazy load via IntersectionObserver as per ADR 0003
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            initTerminal(container);
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '100px' }
+      );
+      observer.observe(container);
+    } else {
+      initTerminal(container);
+    }
+  }
+</script>
+
+<style>
+  /* Root Terminal Container */
+  .terminal-wrapper {
+    background-color: var(--navy);
+    border: 1px solid rgba(223, 230, 238, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-block: 2.5rem;
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--white);
+  }
+
+  /* Header */
+  .terminal-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    background-color: rgba(223, 230, 238, 0.04);
+    border-bottom: 1px solid rgba(223, 230, 238, 0.12);
+  }
+
+  .terminal-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .status-indicator.live {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--lime);
+    box-shadow: 0 0 8px var(--lime);
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  .ticker-symbol {
+    font-weight: bold;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+  }
+
+  .current-price {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  .price-change {
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+
+  .accent-lime {
+    color: var(--lime);
+  }
+
+  .accent-crimson {
+    color: #FF5252;
+  }
+
+  /* Strategy Presets */
+  .strategy-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .strategy-preset-btn {
+    background-color: transparent;
+    color: var(--white-dim);
+    border: 1px solid rgba(223, 230, 238, 0.25);
+    border-radius: 4px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.15s ease-in-out;
+  }
+
+  .strategy-preset-btn:hover {
+    color: var(--white);
+    border-color: var(--lime);
+  }
+
+  .strategy-preset-btn.active {
+    background-color: var(--lime);
+    color: var(--navy);
+    border-color: var(--lime);
+  }
+
+  /* Sim Controls */
+  .sim-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ctrl-btn {
+    background-color: rgba(223, 230, 238, 0.08);
+    color: var(--white);
+    border: 1px solid rgba(223, 230, 238, 0.2);
+    border-radius: 4px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .ctrl-btn:hover {
+    background-color: rgba(223, 230, 238, 0.16);
+    border-color: var(--white-dim);
+  }
+
+  /* Sliders Toolbar */
+  .terminal-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    background-color: rgba(23, 25, 40, 0.95);
+    border-bottom: 1px solid rgba(223, 230, 238, 0.12);
+  }
+
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.85rem;
+    color: var(--white-dim);
+  }
+
+  .val-tag {
+    color: var(--lime);
+    font-weight: bold;
+  }
+
+  .terminal-slider {
+    accent-color: var(--lime);
+    cursor: pointer;
+    height: 6px;
+  }
+
+  .active-signal-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    margin-left: auto;
+  }
+
+  .signal-label {
+    color: var(--white-dim);
+  }
+
+  .signal-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .badge-buy {
+    background-color: rgba(206, 216, 70, 0.2);
+    color: var(--lime);
+    border: 1px solid var(--lime);
+  }
+
+  .badge-sell {
+    background-color: rgba(255, 82, 82, 0.2);
+    color: #FF5252;
+    border: 1px solid #FF5252;
+  }
+
+  .badge-hold {
+    background-color: rgba(223, 230, 238, 0.1);
+    color: var(--white-dim);
+    border: 1px solid rgba(223, 230, 238, 0.2);
+  }
+
+  /* Mobile Tabs */
+  .mobile-tabs {
+    display: flex;
+    background-color: rgba(223, 230, 238, 0.03);
+    border-bottom: 1px solid rgba(223, 230, 238, 0.12);
+  }
+
+  .terminal-tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--white-dim);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.75rem 0.5rem;
+    min-height: 44px;
+    cursor: pointer;
+  }
+
+  .terminal-tab-btn.active {
+    color: var(--lime);
+    border-bottom-color: var(--lime);
+  }
+
+  /* Terminal Grid */
+  .terminal-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 480px;
+  }
+
+  .terminal-panel {
+    display: none; /* hidden on mobile unless active */
+    padding: 1rem;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .terminal-panel.active-panel {
+    display: flex;
+  }
+
+  @media (min-width: 64rem) {
+    .mobile-tabs {
+      display: none; /* hide tabs on desktop */
+    }
+
+    .terminal-grid {
+      grid-template-columns: minmax(460px, 2.6fr) minmax(180px, 1fr) minmax(220px, 1.2fr);
+      border-top: none;
+    }
+
+    .terminal-panel {
+      display: flex !important;
+      flex-direction: column;
+      border-right: 1px solid rgba(223, 230, 238, 0.12);
+    }
+
+    .terminal-panel:last-child {
+      border-right: none;
+    }
+  }
+
+
+  /* Panel Header */
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(223, 230, 238, 0.08);
+  }
+
+  .panel-title {
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .panel-meta {
+    font-size: 0.8rem;
+    color: var(--white-dim);
+  }
+
+  /* Panel 1: Chart */
+  .chart-panel {
+    min-height: 400px;
+  }
+
+  .chart-container {
+    flex: 1;
+    width: 100%;
+    min-height: 380px;
+  }
+
+  /* Panel 2: Order Book */
+  .orderbook-panel {
+    font-size: 0.8rem;
+  }
+
+  .orderbook-spread {
+    font-size: 0.8rem;
+    color: var(--lime);
+    font-weight: bold;
+  }
+
+  .orderbook-table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    color: var(--white-dim);
+    font-size: 0.75rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(223, 230, 238, 0.08);
+    margin-bottom: 0.25rem;
+  }
+
+  .orderbook-table-header span:nth-child(2),
+  .orderbook-table-header span:nth-child(3) {
+    text-align: right;
+  }
+
+  .orderbook-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  :global(.orderbook-row) {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 2px 4px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    z-index: 1;
+  }
+
+  :global(.orderbook-row .size),
+  :global(.orderbook-row .total) {
+    text-align: right;
+    color: var(--white-dim);
+  }
+
+  :global(.ask-row .price) {
+    color: #FF5252;
+  }
+
+  :global(.bid-row .price) {
+    color: var(--lime);
+  }
+
+  :global(.depth-bar) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: -1;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+
+  :global(.ask-bar) {
+    background-color: #FF5252;
+  }
+
+  :global(.bid-bar) {
+    background-color: var(--lime);
+  }
+
+  .orderbook-mid-line {
+    text-align: center;
+    padding: 4px 0;
+    margin: 4px 0;
+    border-top: 1px dashed rgba(223, 230, 238, 0.15);
+    border-bottom: 1px dashed rgba(223, 230, 238, 0.15);
+  }
+
+  .mid-tag {
+    font-size: 0.7rem;
+    color: var(--white-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* Panel 3: Backtest Metrics */
+  .metrics-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .metric-card {
+    background-color: rgba(223, 230, 238, 0.04);
+    border: 1px solid rgba(223, 230, 238, 0.08);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .metric-card.full-width {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .metric-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--white-dim);
+    margin-bottom: 0.25rem;
+  }
+
+
+  .metric-value {
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: monospace;
+  }
+
+  /* Execution Tape */
+  .trades-tape-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+  }
+
+  .tape-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--white-dim);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .trades-tape {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  :global(.trade-tape-row) {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 6px;
+    background-color: rgba(223, 230, 238, 0.03);
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.75rem;
+  }
+
+  :global(.tape-time) {
+    color: var(--white-dim);
+  }
+
+  :global(.tape-type) {
+    font-weight: bold;
+  }
+
+  :global(.tape-price) {
+    color: var(--white);
+  }
+
+  :global(.tape-pnl) {
+    font-weight: bold;
+  }
+</style>

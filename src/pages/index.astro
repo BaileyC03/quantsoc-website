@@ -1,4 +1,8 @@
 ---
+import Base from "../layouts/Base.astro";
+import logoSquare from "../assets/logo.svg";
+import EmployerMarquee from "../components/EmployerMarquee.astro";
+import TradingTerminal from "../components/TradingTerminal.astro";
 import Base from '../layouts/Base.astro';
 import logoSquare from '../assets/logo.svg';
 import EmployerMarquee from '../components/EmployerMarquee.astro';
@@ -19,13 +23,21 @@ import EmployerMarquee from '../components/EmployerMarquee.astro';
       fetchpriority="high"
     />
     <div class="hero-copy">
-      <h1 class="hero-heading">You <span class="accent">don't need</span> a target university for a quant career.</h1>
+      <h1 class="hero-heading">
+        You <span class="accent">don't need</span> a target university for a quant
+        career.
+      </h1>
       <p>
-        QuantSoc helps Swansea University students break into high-paying quant roles through
-        early planning, CV reviews, workshops, and competition involvement.
+        QuantSoc helps Swansea University students break into high-paying quant
+        roles through early planning, CV reviews, workshops, and competition
+        involvement.
       </p>
       <p><strong>Membership is free.</strong></p>
-      <a class="btn" href="https://www.swansea-union.co.uk/activities/society/42383/">Join QuantSoc</a>
+      <a
+        class="btn"
+        href="https://www.swansea-union.co.uk/activities/society/42383/"
+        >Join QuantSoc</a
+      >
     </div>
   </section>
 
@@ -38,11 +50,19 @@ import EmployerMarquee from '../components/EmployerMarquee.astro';
 
 <style>
   .hero {
+    position: relative;
+    overflow: hidden;
     display: grid;
     align-items: center;
     gap: var(--gap);
     grid-template-columns: 1fr;
     padding-block: clamp(2rem, 6vw, 4rem);
+  }
+
+  .hero-logo,
+  .hero-copy {
+    position: relative;
+    z-index: 1;
   }
 
   @media (min-width: 48rem) {
@@ -70,6 +90,26 @@ import EmployerMarquee from '../components/EmployerMarquee.astro';
 
   .hero-copy .btn {
     margin-top: 1.5rem;
+  }
+
+  .terminal-section {
+    padding-block: clamp(2rem, 6vw, 3.5rem);
+    border-top: 1px solid rgba(223, 230, 238, 0.15);
+  }
+
+  .terminal-intro h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  .terminal-intro h2 .accent {
+    color: var(--lime);
+  }
+
+  .terminal-intro p {
+    max-width: 50rem;
+    color: var(--white-dim);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
   }
 
   .employers-section {
