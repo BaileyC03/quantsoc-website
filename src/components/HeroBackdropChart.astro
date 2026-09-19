@@ -1,0 +1,168 @@
+---
+// src/components/HeroBackdropChart.astro
+---
+
+<div id="hero-backdrop-wrapper" class="hero-backdrop" aria-hidden="true">
+  <div id="hero-backdrop-chart" class="backdrop-chart"></div>
+  <div class="backdrop-overlay"></div>
+</div>
+
+<script>
+  import {
+    createChart,
+    CandlestickSeries,
+    LineSeries,
+    ColorType,
+    type UTCTimestamp,
+    type IChartApi,
+  } from 'lightweight-charts';
+  import { MarketGenerator } from '../lib/quant/market-generator';
+
+  const container = document.getElementById('hero-backdrop-wrapper');
+  const chartEl = document.getElementById('hero-backdrop-chart');
+  let chart: IChartApi | null = null;
+  let intervalId: number | null = null;
+
+  function initBackdrop(): void {
+    if (chart || !container || !chartEl) return;
+
+    // Calmer volatility to eliminate jagged visual noise
+    const market = new MarketGenerator(105, 0.15, 0.0, 60);
+
+    chart = createChart(chartEl, {
+      layout: {
+        background: { type: ColorType.Solid, color: 'transparent' },
+        textColor: '#DFE6EE',
+      },
+      grid: {
+        vertLines: { color: 'rgba(223, 230, 238, 0.03)' },
+        horzLines: { color: 'rgba(223, 230, 238, 0.03)' },
+      },
+      crosshair: {
+        vertLine: { visible: false },
+        horzLine: { visible: false },
+      },
+      rightPriceScale: {
+        visible: false,
+      },
+      timeScale: {
+        visible: false,
+      },
+      handleScroll: false,
+      handleScale: false,
+      autoSize: true,
+    });
+
+    const candleSeries = chart.addSeries(CandlestickSeries, {
+      upColor: '#CED846',
+      downColor: '#FF5252',
+      borderVisible: false,
+      wickUpColor: '#CED846',
+      wickDownColor: '#FF5252',
+    });
+
+    const maLine = chart.addSeries(LineSeries, {
+      color: 'rgba(206, 216, 70, 0.3)',
+      lineWidth: 1.5,
+    });
+
+    const history = market.generateHistory(90);
+    candleSeries.setData(
+      history.map((c) => ({
+        time: c.time as UTCTimestamp,
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+      }))
+    );
+
+    // Compute rolling MA
+    const maData: { time: UTCTimestamp; value: number }[] = [];
+    for (let i = 10; i < history.length; i++) {
+      const slice = history.slice(i - 10, i + 1);
+      const avg = slice.reduce((a, b) => a + b.close, 0) / slice.length;
+      maData.push({ time: history[i].time as UTCTimestamp, value: Number(avg.toFixed(2)) });
+    }
+    maLine.setData(maData);
+
+    chart.timeScale().fitContent();
+    chart.timeScale().applyOptions({
+      barSpacing: 16,
+      rightOffset: 4,
+    });
+
+    // Respect prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!prefersReducedMotion) {
+      intervalId = window.setInterval(() => {
+        const { candle } = market.tick();
+        candleSeries.update({
+          time: candle.time as UTCTimestamp,
+          open: candle.open,
+          high: candle.high,
+          low: candle.low,
+          close: candle.close,
+        });
+      }, 750);
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!entries.length || !entries[0].contentRect || !chart) return;
+      const { width, height } = entries[0].contentRect;
+      chart.applyOptions({ width, height });
+      chart.timeScale().fitContent();
+    });
+    resizeObserver.observe(container);
+  }
+
+  const mql = window.matchMedia('(min-width: 48rem)');
+  if (mql.matches) {
+    initBackdrop();
+  } else {
+    mql.addEventListener('change', (e) => {
+      if (e.matches) initBackdrop();
+    }, { once: true });
+  }
+</script>
+
+<style>
+  .hero-backdrop {
+    display: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .hero-backdrop {
+      display: block;
+    }
+  }
+
+  .backdrop-chart {
+    position: absolute;
+    inset: -10px;
+    filter: blur(3px);
+    opacity: 0.65;
+    transform: scale(1.02);
+  }
+
+  /* Directional fade: visible on left behind logo, clean dark navy on right behind title */
+  .backdrop-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      rgba(23, 25, 40, 0.2) 0%,
+      rgba(23, 25, 40, 0.5) 40%,
+      rgba(23, 25, 40, 0.92) 70%,
+      rgba(23, 25, 40, 0.98) 100%
+    );
+  }
+</style>
+
+
+

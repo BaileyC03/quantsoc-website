@@ -3,9 +3,7 @@ import Base from "../layouts/Base.astro";
 import logoSquare from "../assets/logo.svg";
 import EmployerMarquee from "../components/EmployerMarquee.astro";
 import TradingTerminal from "../components/TradingTerminal.astro";
-import Base from '../layouts/Base.astro';
-import logoSquare from '../assets/logo.svg';
-import EmployerMarquee from '../components/EmployerMarquee.astro';
+import HeroBackdropChart from "../components/HeroBackdropChart.astro";
 ---
 
 <Base
@@ -13,6 +11,7 @@ import EmployerMarquee from '../components/EmployerMarquee.astro';
   description="QuantSoc helps Swansea University students break into high-paying quant careers through early planning, CV reviews, workshops and competitions. Free to join."
 >
   <section class="container hero">
+    <HeroBackdropChart />
     <img
       src={logoSquare.src}
       width="1180"
