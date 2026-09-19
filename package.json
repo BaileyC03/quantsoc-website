@@ -12,7 +12,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.3.3"
+    "astro": "^7.3.3",
+    "lightweight-charts": "^5.2.1"
   },
   "allowScripts": {
     "esbuild": true
